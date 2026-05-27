@@ -1,0 +1,35 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= titulo
+    link(rel="stylesheet" href="/dist/css/bootstrap.min.css")
+  body.bg-light
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.mb-4
+      div.container
+        a.navbar-brand(href="/") Fotaza
+        a.btn.btn-success(href="/publicaciones/crear") + Subir Foto
+
+    div.container
+      h1.text-center.mb-4= titulo
+      if publicaciones.length === 0
+        div.alert.alert-info.text-center No hay publicaciones para mostrar. ¡Sé el primero en subir una!
+      else
+        div.row
+          each pub in publicaciones
+            div.col-md-4.mb-4
+              div.card.shadow-sm
+                if pub.Imagen && pub.Imagen.direccion_foto
+                  - const imagenBase64 = pub.Imagen.direccion_foto.toString('base64')
+                  img.card-img-top(src=`data:image/png;base64,${imagenBase64}` alt=pub.titulo)
+                else
+                  div.bg-secondary.text-white.text-center.py-5 Sin Imagen
+                
+                div.card-body
+                  h5.card-title= pub.titulo
+                  p.card-text.text-muted= pub.descripcion
+                
+                div.card-footer.text-muted.d-flex.justify-content-between.align-items-center
+                  small Por #{pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo'}
+                  small= new Date(pub.createdAt).toLocaleDateString()

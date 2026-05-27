@@ -1,0 +1,45 @@
+extends layout
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-8
+        .card.shadow
+          .card-header.bg-primary.text-white
+            h3.card-title.mb-0= titulo
+          .card-body
+            p.text-muted Subí tus mejores contenidos a la comunidad.
+
+            form(action="/publicaciones/crear" method="POST")
+              
+              .mb-3
+                label.form-label(for="titulo") Titulo de la publicación:
+                input#titulo.form-control(type="text" name="titulo" required placeholder="Ej: Atardecer en las Sierras")
+
+              .mb-3
+                label.form-label(for="descripcion") Descripción (Opcional):
+                textarea#descripcion.form-control(name="descripcion" rows="3" placeholder="Contanos un poco más sobre la foto...")
+
+              .mb-3
+                label.form-label(for="inputFoto") Seleccionar imagen:
+                input#inputFoto.form-control(type="file" accept="image/*" required)
+                
+                input#fotoBase64(type="hidden" name="foto")
+
+              .d-grid
+                button.btn.btn-primary(type="submit") Publicar Contenido
+
+  script.
+    const inputFoto = document.getElementById('inputFoto');
+    const fotoBase64 = document.getElementById('fotoBase64');
+
+    inputFoto.addEventListener('change', (e) => {
+      const archivo = e.target.files[0];
+      if (archivo) {
+        const lector = new FileReader();
+        lector.onloadend = () => {
+          fotoBase64.value = lector.result;
+        };
+        lector.readAsDataURL(archivo);
+      }
+    });
