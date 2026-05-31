@@ -1,0 +1,57 @@
+extends ../layout
+
+block content
+  .row.justify-content-center.mt-5
+    .col-md-5.col-lg-4
+
+      .text-center.mb-4
+        img(src="/images/Fotaza.png" alt="Logo Fotaza" height="60")
+        h2.mt-2.fw-bold Iniciar Sesión
+
+      if query && query.registered
+        .alert.alert-success ✅ Cuenta creada correctamente. Ya podés iniciar sesión.
+
+      if error
+        .alert.alert-danger= error
+
+      .card.shadow-sm
+        .card-body.p-4
+
+          form(action="/auth/login" method="POST")
+
+            .mb-3
+              label.form-label(for="mail") Mail
+              input#mail.form-control(
+                type="email"
+                name="mail"
+                autofocus
+                placeholder="tucorreo@mail.com"
+              )
+
+            .mb-3
+              label.form-label(for="password") Contraseña
+              .input-group
+                input#password.form-control(
+                  type="password"
+                  name="contraseña"
+                  placeholder="••••••••"
+                )
+                button.btn.btn-outline-secondary(
+                  type="button"
+                  onclick="togglePass()"
+                  title="Mostrar/ocultar"
+                ) 👁
+
+            .d-grid.mt-4
+              button.btn.btn-primary(type="submit") Ingresar
+
+          hr.my-3
+          p.text-center.mb-0.small
+            | ¿No tenés cuenta?&nbsp;
+            a(href="/auth/register") Registrate acá
+
+  script.
+    function togglePass() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }

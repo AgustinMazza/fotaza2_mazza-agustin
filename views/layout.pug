@@ -1,18 +1,60 @@
 doctype html
-html(lang="en")
+html(lang="es")
   head
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    link(rel="stylesheet", href="/styles.css")
+    title= titulo || "Fotaza"
     link(rel="stylesheet", href="/dist/css/bootstrap.min.css")
+    link(rel="stylesheet", href="/styles.css")
+    link(rel="icon", type="image/png", href="/images/logoo.png")
     block metadata
-  body 
-    nav
-      ul 
-        li 
-          a(href='/') Home
-        li
-          a(href='/fotos') Fotulis
-    main 
+
+  body.bg-light
+
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.mb-4
+      div.container
+        a.navbar-brand.d-flex.align-items-center(href="/")
+          img(src="/images/Fotaza.png" alt="Logo Fotaza" height="36" class="d-inline-block align-top me-2")
+
+        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav")
+          span.navbar-toggler-icon
+
+        div#navbarNav.collapse.navbar-collapse.justify-content-between
+          ul.navbar-nav
+            li.nav-item
+              a.nav-link(href='/publicaciones') Publicaciones
+
+          div.d-flex.align-items-center.gap-2
+            if usuarioSesion
+              a.btn.btn-success(href="/publicaciones/crear") + Subir Foto
+              .dropdown
+                button.btn.btn-outline-light.dropdown-toggle(
+                  type="button"
+                  data-bs-toggle="dropdown"
+                )
+                  if usuarioSesion.foto_perfil
+                    img(
+                      src=usuarioSesion.foto_perfil
+                      alt="Avatar"
+                      width="28" height="28"
+                      style="border-radius:50%;object-fit:cover;margin-right:6px"
+                    )
+                  | #{usuarioSesion.nombre_usuario}
+                ul.dropdown-menu.dropdown-menu-end
+                  li
+                    a.dropdown-item(href="/perfil") Mi perfil
+                  if usuarioSesion.admin
+                    li
+                      a.dropdown-item(href="/admin") Panel de admin
+                  li
+                    hr.dropdown-divider
+                  li
+                    a.dropdown-item.text-danger(href="/auth/logout") Cerrar sesión
+            else
+              a.btn.btn-outline-light.me-1(href="/auth/login") Iniciar sesión
+              a.btn.btn-success(href="/auth/register") Registrarse
+
+    main.container
       block content
-    script(src=" /dist/js/bootstrap.bundle.min.js")     
+
+    script(src="/dist/js/bootstrap.bundle.min.js")

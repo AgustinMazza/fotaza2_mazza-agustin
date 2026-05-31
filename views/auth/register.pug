@@ -1,0 +1,80 @@
+extends ../layout
+
+block content
+  .row.justify-content-center.mt-5
+    .col-md-6.col-lg-5
+
+      .text-center.mb-4
+        img(src="/images/Fotaza.png" alt="Logo Fotaza" height="60")
+        h2.mt-2.fw-bold Crear cuenta
+
+      if errores && errores.length > 0
+        .alert.alert-danger
+          ul.mb-0
+            each e in errores
+              li= e
+
+      .card.shadow-sm
+        .card-body.p-4
+
+          form(action="/auth/register" method="POST")
+
+            .mb-3
+              label.form-label(for="nombre_usuario") Nombre de usuario *
+              input#nombre_usuario.form-control(
+                type="text"
+                name="nombre_usuario"
+                placeholder="fotero123"
+                value=datos.nombre_usuario || ''
+              )
+
+            .mb-3
+              label.form-label(for="mail") Mail *
+              input#mail.form-control(
+                type="email"
+                name="mail"
+                placeholder="tucorreo@mail.com"
+                value=datos.mail || ''
+              )
+
+            .mb-3
+              label.form-label(for="password") Contraseña *
+              .input-group
+                input#password.form-control(
+                  type="password"
+                  name="contraseña"
+                  placeholder="Mínimo 6 caracteres"
+                  value=datos.contraseña || ''
+                )
+                button.btn.btn-outline-secondary(
+                  type="button"
+                  onclick="togglePass('password')"
+                ) 👁
+
+            .mb-3
+              label.form-label(for="confirmar_password") Confirmar contraseña *
+              .input-group
+                input#confirmar_password.form-control(
+                  type="password"
+                  name="confirmar_contraseña"
+                  placeholder="Repetí la contraseña"
+                  value=datos.contraseña || ''
+                )
+                button.btn.btn-outline-secondary(
+                  type="button"
+                  onclick="togglePass('confirmar_password')"
+                ) 👁
+
+            .d-grid.mt-4
+              button.btn.btn-success(type="submit") Crear cuenta
+
+          hr.my-3
+          p.text-center.mb-0.small
+            | ¿Ya tenés cuenta?&nbsp;
+            a(href="/auth/login") Iniciá sesión
+
+  script.
+    function togglePass(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }

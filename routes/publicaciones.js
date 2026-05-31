@@ -1,23 +1,17 @@
 import express from "express";
-import { Publicacion, Imagen, Usuario } from "../models/index.js";
+import {
+  getPublicaciones,
+  getCrearPublicacion,
+  postCrearPublicacion,
+} from "../controllers/publicacion.js";
+import { requireAuth } from "../middleware/auth.js"; // descomentar cuando tengas sesiones
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  try {
-    const listaPublicaciones = await Publicacion.findAll({
-      include: [{ model: Imagen }, { model: Usuario }],
-      order: [["fecha_creacion", "DESC"]],
-    });
+router.get("/", getPublicaciones);
 
-    res.render("publicaciones", {
-      titulo: "Galería de Fotos",
-      publicaciones: listaPublicaciones,
-    });
-  } catch (error) {
-    console.error("Error al traer las publicaciones: ", error);
-    res.status(500).send("Error interno del servidor");
-  }
-});
+router.get("/crear", requireAuth, getCrearPublicacion);
+
+router.post("/crear", requireAuth, postCrearPublicacion);
 
 export default router;

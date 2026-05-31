@@ -16,7 +16,7 @@ Usuario.hasMany(Publicacion, { foreignKey: "usuario_id" });
 Publicacion.belongsTo(Usuario, { foreignKey: "usuario_id" });
 
 //Publicacion 1-1 Imagen
-Publicacion.hasOne(Imagen, { foreignKey: "publicacion_id" });
+Publicacion.hasMany(Imagen, { foreignKey: "publicacion_id" });
 Imagen.belongsTo(Publicacion, { foreignKey: "publicacion_id" });
 
 //Comentario (Muchos a 1 con Usuario y Publicacion)

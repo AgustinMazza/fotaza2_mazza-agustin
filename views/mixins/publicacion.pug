@@ -1,0 +1,17 @@
+
+mixin tarjetaPublicacion(pub)
+  div.col-md-4.mb-4
+    div.card.shadow-sm
+      if pub.Imagen && pub.Imagen.direccion_foto
+        - const imagenBase64 = pub.Imagen.direccion_foto.toString('base64')
+        img.card-img-top(src=`data:image/png;base64,${imagenBase64}` alt=pub.titulo)
+      else
+        div.bg-secondary.text-white.text-center.py-5 Sin Imagen
+      
+      div.card-body
+        h5.card-title= pub.titulo
+        p.card-text.text-muted= pub.descripcion
+      
+      div.card-footer.text-muted.d-flex.justify-content-between.align-items-center
+        small Por #{pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo'}
+        small= new Date(pub.fecha_creacion).toLocaleDateString()
