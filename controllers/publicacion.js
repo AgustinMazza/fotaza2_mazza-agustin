@@ -82,6 +82,7 @@ export const getPublicaciones = async (req, res) => {
 
       plain.comentariosCerrados = plain.comentarios_cerrados || false;
       plain.esAutor = usuarioId ? plain.usuario_id === usuarioId : false;
+      plain.Etiquetas = plain.Etiqueta || [];
       return plain;
     });
 
