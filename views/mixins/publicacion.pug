@@ -1,17 +1,40 @@
-
 mixin tarjetaPublicacion(pub)
-  div.col-md-4.mb-4
-    div.card.shadow-sm
-      if pub.Imagen && pub.Imagen.direccion_foto
-        - const imagenBase64 = pub.Imagen.direccion_foto.toString('base64')
-        img.card-img-top(src=`data:image/png;base64,${imagenBase64}` alt=pub.titulo)
+  //Primera imagen en .base64 listo (me lo trajo el controller)
+  - const primeraImg = pub.imagenes && pub.imagenes.length > 0 ? pub.imagenes[0] : null
+  - const fotoSrc = primeraImg && primeraImg.base64 ? `data:image/jpeg;base64,${primeraImg.base64}` : null
+
+  .col-sm-6.col-md-4.col-lg-3.mb-4
+    .card.shadow-sm.h-100(
+      style="cursor: pointer;"
+      data-bs-toggle="modal"
+      data-bs-target="#modalPublicacion"
+      data-id=pub.id
+      data-titulo=pub.titulo
+      data-autor=(pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo')
+      data-comentarios=JSON.stringify(pub.Comentarios || [])
+    )
+      if fotoSrc
+        img.card-img-top(
+          src=fotoSrc
+          alt=pub.titulo
+          style="height: 220px; object-fit: cover;"
+        )
       else
-        div.bg-secondary.text-white.text-center.py-5 Sin Imagen
-      
-      div.card-body
-        h5.card-title= pub.titulo
-        p.card-text.text-muted= pub.descripcion
-      
-      div.card-footer.text-muted.d-flex.justify-content-between.align-items-center
-        small Por #{pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo'}
-        small= new Date(pub.fecha_creacion).toLocaleDateString()
+        .bg-secondary.text-white.text-center.d-flex.align-items-center.justify-content-center(
+          style="height: 220px;"
+        )
+          span Sin imagen
+
+      .card-body.pb-1
+        h6.card-title.fw-bold.mb-1= pub.titulo
+        if pub.descripcion
+          p.card-text.text-muted.small.text-truncate= pub.descripcion
+
+        if pub.Etiquetas && pub.Etiquetas.length > 0
+          .mb-1
+            each tag in pub.Etiquetas
+              span.badge.bg-primary.me-1.mb-1 ##{tag.nombre}
+
+      .card-footer.text-muted.d-flex.justify-content-between.small
+        span Por #{pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo'}
+        span= new Date(pub.fecha_creacion).toLocaleDateString('es-AR')

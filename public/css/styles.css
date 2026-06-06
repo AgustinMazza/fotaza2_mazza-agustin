@@ -1,0 +1,39 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.fotaza-navbar {
+  background: #353535;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 0 0;
+}
+.fotaza-navbar .brand {
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: #111;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+.fotaza-navbar .brand {
+  color: #0d6efd;
+}
+.nav-underline .nav-link {
+  color: #ffffff;
+  font-size: 0.92rem;
+  padding: 1rem 0.9rem;
+  border-bottom: 2px solid transparent;
+}
+.nav-underline .nav-link.active {
+  color: #838383;
+  border-bottom-color: #0d6efd;
+}
+.user-dropdown .dropdown-menu {
+  min-width: 180px;
+  margin-top: 4px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}

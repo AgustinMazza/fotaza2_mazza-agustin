@@ -26,4 +26,6 @@ export const validador = z.object({
     },
     { message: "Debés subir al menos una imagen." },
   ),
+  copyright: z.union([z.string(), z.array(z.string())]).optional(),
+  marca_agua: z.union([z.string(), z.array(z.string())]).optional(),
 });

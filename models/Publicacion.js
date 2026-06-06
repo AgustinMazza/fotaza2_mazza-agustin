@@ -7,6 +7,7 @@ const Publicacion = sequelize.define("Publicacion", {
   descripcion: { type: DataTypes.TEXT, allowNull: true },
   usuario_id: { type: DataTypes.INTEGER, allowNull: false },
   fecha_creacion: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  comentarios_cerrados: { type: DataTypes.BOOLEAN, defaultValue: false },
 });
 
 export default Publicacion;

@@ -4,19 +4,91 @@ import {
   Etiqueta,
   PublicacionEtiqueta,
   Usuario,
+  Comentario,
+  Reaccion,
+  Denuncia,
+  MeInteresa,
 } from "../models/index.js";
 import { validador } from "../validaciones/publi.js";
+import { aplicarMarcaAgua } from "../helpers/marcaAgua.js";
 
+function blobABase64(blob) {
+  if (!blob) return null;
+  if (Buffer.isBuffer(blob)) return blob.toString("base64");
+  if (blob?.type === "Buffer" && Array.isArray(blob.data))
+    return Buffer.from(blob.data).toString("base64");
+  return null;
+}
+
+//Publicaciones
 export const getPublicaciones = async (req, res) => {
   try {
-    const listaPublicaciones = await Publicacion.findAll({
-      include: [{ model: Imagen }, { model: Usuario }, { model: Etiqueta }],
+    const usuarioId = req.session?.usuario?.id || null;
+
+    const lista = await Publicacion.findAll({
+      include: [
+        {
+          model: Imagen,
+          as: "imagenes",
+          include: [
+            { model: Reaccion },
+            { model: Denuncia },
+            { model: MeInteresa },
+          ],
+        },
+        { model: Usuario },
+        { model: Etiqueta },
+        {
+          model: Comentario,
+          include: [{ model: Usuario, attributes: ["id", "nombre_usuario"] }],
+        },
+      ],
       order: [["fecha_creacion", "DESC"]],
+    });
+
+    const publicaciones = lista.map((pub) => {
+      const plain = pub.get({ plain: true });
+
+      plain.imagenes = (plain.imagenes || []).map((img) => {
+        const reacciones = img.Reaccions || [];
+        const cantVotos = reacciones.length;
+        const promedio =
+          cantVotos > 0
+            ? (
+                reacciones.reduce((s, r) => s + r.estrellas, 0) / cantVotos
+              ).toFixed(1)
+            : null;
+
+        return {
+          id: img.id,
+          base64: blobABase64(img.direccion_foto),
+          copyright: img.copyright,
+          marca_agua: img.marca_agua,
+          bloqueada: img.bloqueada,
+          cantVotos,
+          promedio,
+          miVoto: usuarioId
+            ? reacciones.find((r) => r.usuario_id === usuarioId)?.estrellas ||
+              null
+            : null,
+          yaDenuncio: usuarioId
+            ? (img.Denuncias || []).some((d) => d.usuario_id === usuarioId)
+            : false,
+          yaMeInteresa: usuarioId
+            ? (img.MeInteresas || []).some((m) => m.usuario_id === usuarioId)
+            : false,
+        };
+      });
+
+      plain.comentariosCerrados = plain.comentarios_cerrados || false;
+      plain.esAutor = usuarioId ? plain.usuario_id === usuarioId : false;
+      return plain;
     });
 
     res.render("publicaciones", {
       titulo: "Galería de Fotos",
-      publicaciones: listaPublicaciones,
+      publicaciones,
+      usuarioId,
     });
   } catch (error) {
     console.error("Error al traer las publicaciones:", error);
@@ -24,6 +96,7 @@ export const getPublicaciones = async (req, res) => {
   }
 };
 
+//publicaciones/crear
 export const getCrearPublicacion = (req, res) => {
   res.render("crear-publicacion", {
     titulo: "Nueva Publicación",
@@ -34,9 +107,8 @@ export const getCrearPublicacion = (req, res) => {
 
 export const postCrearPublicacion = async (req, res) => {
   const validacion = validador.safeParse(req.body);
-
   if (!validacion.success) {
-    const errores = validacion.error.errors.map((err) => err.message);
+    const errores = validacion.error.errors.map((e) => e.message);
     return res.render("crear-publicacion", {
       titulo: "Nueva Publicación",
       errores,
@@ -46,24 +118,16 @@ export const postCrearPublicacion = async (req, res) => {
 
   const { titulo, descripcion, etiquetas, copyright, marca_agua } =
     validacion.data;
-
-  let imagenesBase64 = [];
-
-  if (req.body.imagenes) {
-    if (Array.isArray(req.body.imagenes)) {
-      imagenesBase64 = req.body.imagenes;
-    } else {
-      //subio 1 sola foto
-      imagenesBase64 = [req.body.imagenes];
-    }
-  }
+  const imagenesBase64 = req.body.imagenes
+    ? Array.isArray(req.body.imagenes)
+      ? req.body.imagenes
+      : [req.body.imagenes]
+    : [];
 
   try {
     const usuario_id = req.session?.usuario?.id;
-    let descripcionFinal = null;
-    if (descripcion && descripcion.trim() !== "") {
-      descripcionFinal = descripcion.trim();
-    }
+    const nombre_usuario = req.session?.usuario?.nombre_usuario || "usuario";
+    const descripcionFinal = descripcion?.trim() || null;
 
     const nuevaPublicacion = await Publicacion.create({
       titulo: titulo.trim(),
@@ -71,37 +135,20 @@ export const postCrearPublicacion = async (req, res) => {
       usuario_id,
     });
 
-    let copyrightArray = [];
-    if (Array.isArray(copyright)) {
-      copyrightArray = copyright;
-    } else {
-      copyrightArray = [copyright];
-    }
-
-    let marcaArray = [];
-    if (Array.isArray(marca_agua)) {
-      marcaArray = marca_agua;
-    } else {
-      marcaArray = [marca_agua];
-    }
+    const copyrightArray = Array.isArray(copyright) ? copyright : [copyright];
+    const marcaArray = Array.isArray(marca_agua) ? marca_agua : [marca_agua];
 
     for (let i = 0; i < imagenesBase64.length; i++) {
-      const base64String = imagenesBase64[i];
+      const [, datoPuro] = imagenesBase64[i].split(",");
+      let buffer = Buffer.from(datoPuro, "base64");
+      const tieneCopyright = copyrightArray[i] === "true";
+      const textoMarca = marcaArray[i]?.trim() || "";
 
-      const partes = base64String.split(",");
-      const datoPuro = partes[1];
-
-      const buffer = Buffer.from(datoPuro, "base64");
-
-      let tieneCopyright = false;
-      if (copyrightArray[i] === "true") {
-        tieneCopyright = true;
-      }
-
-      let textoMarca = "";
-      if (tieneCopyright === true) {
-        if (marcaArray[i]) {
-          textoMarca = marcaArray[i];
+      if (tieneCopyright && textoMarca !== "") {
+        try {
+          buffer = await aplicarMarcaAgua(buffer, textoMarca);
+        } catch (sharpErr) {
+          console.error("Error al aplicar marca de agua:", sharpErr);
         }
       }
 
@@ -119,19 +166,16 @@ export const postCrearPublicacion = async (req, res) => {
       .split(",")
       .map((e) => e.trim())
       .filter((e) => e !== "");
-
-    for (const nombreEtiqueta of listaEtiquetas) {
+    for (const nombre of listaEtiquetas) {
       const [etiqueta] = await Etiqueta.findOrCreate({
-        where: { nombre: nombreEtiqueta.toLowerCase() },
+        where: { nombre: nombre.toLowerCase() },
       });
-
       const yaExiste = await PublicacionEtiqueta.findOne({
         where: {
           publicacion_id: nuevaPublicacion.id,
           etiqueta_id: etiqueta.id,
         },
       });
-
       if (!yaExiste) {
         await PublicacionEtiqueta.create({
           publicacion_id: nuevaPublicacion.id,
@@ -148,5 +192,161 @@ export const postCrearPublicacion = async (req, res) => {
       errores: ["Ocurrió un error al guardar. Intentá de nuevo."],
       datos: req.body,
     });
+  }
+};
+
+//publicaciones/comentar
+export const postComentar = async (req, res) => {
+  try {
+    const { publicacion_id, texto } = req.body;
+    const pub = await Publicacion.findByPk(publicacion_id);
+    if (!pub) return res.status(404).send("No encontrada");
+    if (pub.comentarios_cerrados)
+      return res.status(403).json({ error: "Comentarios cerrados" });
+
+    const nuevo = await Comentario.create({
+      texto: texto.trim(),
+      publicacion_id: parseInt(publicacion_id),
+      usuario_id: req.session.usuario.id,
+      bloqueado: false,
+    });
+
+    res.json({
+      id: nuevo.id,
+      texto: nuevo.texto,
+      nombre_usuario: req.session.usuario.nombre_usuario,
+    });
+  } catch (error) {
+    console.error("Error al guardar comentario:", error);
+    res.status(500).send("Error");
+  }
+};
+
+//publicaciones/toggle-comentarios
+export const postToggleComentarios = async (req, res) => {
+  try {
+    const { publicacion_id } = req.body;
+    const pub = await Publicacion.findByPk(publicacion_id);
+    if (!pub) return res.status(404).send("No encontrada");
+    if (pub.usuario_id !== req.session.usuario.id)
+      return res.status(403).send("Sin permiso");
+
+    const nuevoEstado = !pub.comentarios_cerrados;
+    await pub.update({ comentarios_cerrados: nuevoEstado });
+
+    res.json({ cerrados: nuevoEstado });
+  } catch (error) {
+    console.error("Error al cambiar estado de comentarios:", error);
+    res.status(500).send("Error");
+  }
+};
+
+//publicaciones/votar
+export const postVotar = async (req, res) => {
+  try {
+    const { imagen_id, estrellas } = req.body;
+    const usuario_id = req.session.usuario.id;
+
+    const imagen = await Imagen.findByPk(imagen_id, {
+      include: [{ model: Publicacion }],
+    });
+    if (!imagen) return res.status(404).send("No encontrada");
+    if (imagen.Publicacion.usuario_id === usuario_id)
+      return res
+        .status(403)
+        .json({ error: "No podés votar tu propia publicación." });
+
+    const existente = await Reaccion.findOne({
+      where: { imagen_id: parseInt(imagen_id), usuario_id },
+    });
+    if (existente) {
+      await existente.update({ estrellas: parseInt(estrellas) });
+    } else {
+      await Reaccion.create({
+        imagen_id: parseInt(imagen_id),
+        usuario_id,
+        estrellas: parseInt(estrellas),
+      });
+    }
+
+    const todas = await Reaccion.findAll({ where: { imagen_id } });
+    const cantVotos = todas.length;
+    const promedio = (
+      todas.reduce((s, r) => s + r.estrellas, 0) / cantVotos
+    ).toFixed(1);
+    res.json({ ok: true, promedio, cantVotos });
+  } catch (error) {
+    console.error("Error al votar:", error);
+    res.status(500).send("Error");
+  }
+};
+
+//publicaciones/denunciar
+export const postDenunciar = async (req, res) => {
+  try {
+    const { imagen_id, motivo, descripcion } = req.body;
+    const usuario_id = req.session.usuario.id;
+    if (!motivo)
+      return res.status(400).json({ error: "El motivo es obligatorio." });
+
+    const yaExiste = await Denuncia.findOne({
+      where: { imagen_id: parseInt(imagen_id), usuario_id },
+    });
+    if (yaExiste)
+      return res.status(409).json({ error: "Ya denunciaste esta imagen." });
+
+    await Denuncia.create({
+      imagen_id: parseInt(imagen_id),
+      usuario_id,
+      motivo,
+      descripcion: descripcion?.trim() || null,
+      estado: "pendiente",
+    });
+
+    const cant = await Denuncia.count({ where: { imagen_id } });
+    if (cant > 3)
+      await Imagen.update({ bloqueada: true }, { where: { id: imagen_id } });
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Error al denunciar:", error);
+    res.status(500).send("Error");
+  }
+};
+
+//publicaciones/me-interesa
+export const postMeInteresa = async (req, res) => {
+  try {
+    const { imagen_id } = req.body;
+    const usuario_id = req.session.usuario.id;
+
+    const imagen = await Imagen.findByPk(imagen_id, {
+      include: [{ model: Publicacion, include: [{ model: Usuario }] }],
+    });
+    if (!imagen) return res.status(404).send("No encontrada");
+    if (imagen.Publicacion.usuario_id === usuario_id)
+      return res
+        .status(403)
+        .json({ error: "No podés marcar interés en tu propia foto." });
+
+    const yaExiste = await MeInteresa.findOne({
+      where: { imagen_id: parseInt(imagen_id), usuario_id },
+    });
+    if (yaExiste)
+      return res
+        .status(409)
+        .json({ error: "Ya marcaste interés en esta imagen." });
+
+    await MeInteresa.create({ imagen_id: parseInt(imagen_id), usuario_id });
+
+    const autor = imagen.Publicacion.Usuario;
+    res.json({
+      ok: true,
+      autorNombre: autor.nombre_usuario,
+      autorMail: autor.mail,
+    });
+  } catch (error) {
+    console.error("Error en me-interesa:", error);
+    res.status(500).send("Error");
   }
 };

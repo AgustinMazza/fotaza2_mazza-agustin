@@ -4,9 +4,11 @@ import { validador } from "../validaciones/auth.js";
 
 export const getLogin = (req, res) => {
   if (req.session.usuario) return res.redirect("/");
+  const mostrarAlerta = req.query.alerta === "true";
   res.render("auth/login", {
     titulo: "Iniciar Sesión",
     error: null,
+    alerta: mostrarAlerta,
   });
 };
 
@@ -54,7 +56,16 @@ export const postLogin = async (req, res) => {
       admin: usuario.admin,
     };
 
-    res.redirect("/");
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error al guardar sesión:", err);
+        return res.render("auth/login", {
+          titulo: "Iniciar Sesión",
+          error: "Error interno. Intentá de nuevo.",
+        });
+      }
+      res.redirect("/publicaciones");
+    });
   } catch (error) {
     console.error("Error en login:", error);
     res.render("auth/login", {

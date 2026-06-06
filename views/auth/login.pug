@@ -8,6 +8,13 @@ block content
         img(src="/images/Fotaza.png" alt="Logo Fotaza" height="60")
         h2.mt-2.fw-bold Iniciar Sesión
 
+      if alerta
+        .alert.alert-warning.alert-dismissible.fade.show.text-center(role="alert")
+          strong ¡Acceso Restringido! 
+          br
+          .mt-1 Debes iniciar sesión o registrarte para ver el feed completo de publicaciones.
+          button.btn-close(type="button" data-bs-dismiss="alert" aria-label="Close")
+
       if query && query.registered
         .alert.alert-success ✅ Cuenta creada correctamente. Ya podés iniciar sesión.
 
@@ -17,7 +24,7 @@ block content
       .card.shadow-sm
         .card-body.p-4
 
-          form(action="/auth/login" method="POST")
+          form(action="/auth/login" method="POST" novalidate)
 
             .mb-3
               label.form-label(for="mail") Mail
@@ -49,9 +56,4 @@ block content
           p.text-center.mb-0.small
             | ¿No tenés cuenta?&nbsp;
             a(href="/auth/register") Registrate acá
-
-  script.
-    function togglePass() {
-      const input = document.getElementById('password');
-      input.type = input.type === 'password' ? 'text' : 'password';
-    }
+  script(src="/js/auth.js")

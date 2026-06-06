@@ -17,7 +17,7 @@ block content
       .card.shadow-sm
         .card-body.p-4
 
-          form(action="/auth/register" method="POST")
+          form(action="/auth/register" method="POST" novalidate)
 
             .mb-3
               label.form-label(for="nombre_usuario") Nombre de usuario *
@@ -72,9 +72,4 @@ block content
           p.text-center.mb-0.small
             | ¿Ya tenés cuenta?&nbsp;
             a(href="/auth/login") Iniciá sesión
-
-  script.
-    function togglePass(id) {
-      const input = document.getElementById(id);
-      input.type = input.type === 'password' ? 'text' : 'password';
-    }
+  script(src="/js/auth.js")

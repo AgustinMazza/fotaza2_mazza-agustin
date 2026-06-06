@@ -2,59 +2,92 @@ doctype html
 html(lang="es")
   head
     meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
     title= titulo || "Fotaza"
-    link(rel="stylesheet", href="/dist/css/bootstrap.min.css")
-    link(rel="stylesheet", href="/styles.css")
-    link(rel="icon", type="image/png", href="/images/logoo.png")
-    block metadata
+    link(rel="stylesheet" href="/dist/css/bootstrap.min.css")
+    link(rel="stylesheet" href="/css/styles.css")
+    link(rel="icon" type="image/png" href="/images/logoo.png")
 
+
+  block metadata
   body.bg-light
 
-    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.mb-4
-      div.container
-        a.navbar-brand.d-flex.align-items-center(href="/")
-          img(src="/images/Fotaza.png" alt="Logo Fotaza" height="36" class="d-inline-block align-top me-2")
+    header.fotaza-navbar.sticky-top
+      .container
+        .d-flex.align-items-center.justify-content-between.py-2
 
-        button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav")
-          span.navbar-toggler-icon
+          //Logo
+          a.brand(href="/")
+            | Fotaza
 
-        div#navbarNav.collapse.navbar-collapse.justify-content-between
-          ul.navbar-nav
-            li.nav-item
-              a.nav-link(href='/publicaciones') Publicaciones
+          //Nav central
+          nav.d-flex.align-items-center
+            ul.nav.nav-underline.mb-0
+              li.nav-item
+                a.nav-link(href="/publicaciones") Explorar
+              li.nav-item
+                a.nav-link(href="/buscador") Buscar
 
-          div.d-flex.align-items-center.gap-2
+          //Lado derecho
+          .d-flex.align-items-center.gap-2
             if usuarioSesion
-              a.btn.btn-success(href="/publicaciones/crear") + Subir Foto
-              .dropdown
-                button.btn.btn-outline-light.dropdown-toggle(
+              a.btn.btn-sm.btn-success(href="/publicaciones/crear") + Subir
+
+              //Avatar + dropdown — posicion fija
+              .user-dropdown.position-relative
+                button#userMenuBtn.btn.btn-sm.btn-outline-secondary.d-flex.align-items-center.gap-2(
                   type="button"
                   data-bs-toggle="dropdown"
+                  data-bs-auto-close="true"
+                  aria-expanded="false"
                 )
                   if usuarioSesion.foto_perfil
                     img(
                       src=usuarioSesion.foto_perfil
                       alt="Avatar"
-                      width="28" height="28"
-                      style="border-radius:50%;object-fit:cover;margin-right:6px"
+                      width="26" height="26"
+                      style="border-radius:50%;object-fit:cover;"
                     )
-                  | #{usuarioSesion.nombre_usuario}
-                ul.dropdown-menu.dropdown-menu-end
+                  else
+                    span.rounded-circle.bg-secondary.text-white.d-inline-flex.align-items-center.justify-content-center(
+                      style="width:26px;height:26px;font-size:12px;"
+                    )= usuarioSesion.nombre_usuario[0].toUpperCase()
+                  span= usuarioSesion.nombre_usuario
+
+                //dropdown-menu-end clavado a la derecha del boton
+                ul.dropdown-menu.dropdown-menu-end(style="z-index:9999;")
                   li
-                    a.dropdown-item(href="/perfil") Mi perfil
+                    a.dropdown-item(href="/perfil")
+                      | 👤&nbsp; Mi perfil
+                  li
+                    a.dropdown-item(href="/colecciones")
+                      | 🗂️&nbsp; Mis colecciones
                   if usuarioSesion.admin
                     li
-                      a.dropdown-item(href="/admin") Panel de admin
+                      hr.dropdown-divider
+                    li
+                      a.dropdown-item(href="/admin")
+                        | ⚙️&nbsp; Panel admin
                   li
                     hr.dropdown-divider
                   li
-                    a.dropdown-item.text-danger(href="/auth/logout") Cerrar sesión
+                    form(action="/auth/logout" method="POST")
+                      button.dropdown-item.text-danger(type="submit")
+                        | 🚪&nbsp; Cerrar sesión
             else
-              a.btn.btn-outline-light.me-1(href="/auth/login") Iniciar sesión
-              a.btn.btn-success(href="/auth/register") Registrarse
+              a.btn.btn-sm.btn-outline-secondary(href="/auth/login") Ingresar
+              a.btn.btn-sm.btn-dark(href="/auth/register") Registrarse
 
-    main.container
+    main.container.py-4
       block content
 
     script(src="/dist/js/bootstrap.bundle.min.js")
+    script.
+      (function() {
+        var path = window.location.pathname;
+        document.querySelectorAll('.nav-underline .nav-link').forEach(function(link) {
+          if (link.getAttribute('href') === path) {
+            link.classList.add('active');
+          }
+        });
+      })();

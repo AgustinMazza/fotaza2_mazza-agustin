@@ -1,0 +1,54 @@
+.imagen-preview-card {
+  position: relative;
+}
+.imagen-preview-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.imagen-preview-card .btn-eliminar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.opciones-copyright {
+  display: none;
+}
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #0d6efd;
+  color: white;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 13px;
+  margin: 2px;
+}
+.tag-badge button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+#zona-imagenes {
+  min-height: 120px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#zona-imagenes:hover {
+  border-color: #0d6efd;
+  background: #f0f5ff;
+}
