@@ -9,6 +9,7 @@ const Usuario = sequelize.define("Usuario", {
   contraseña: { type: DataTypes.STRING, allowNull: false },
   estado: { type: DataTypes.BOOLEAN, defaultValue: true },
   admin: { type: DataTypes.BOOLEAN, defaultValue: false },
+  descripcion: { type: DataTypes.TEXT, allowNull: true },
 });
 
 export default Usuario;

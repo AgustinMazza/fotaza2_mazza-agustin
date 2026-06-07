@@ -6,6 +6,7 @@ import authRouter from "./routes/auth.js";
 import { connectDatabase } from "./db/config.js";
 import { cargarUsuarioSesion } from "./middleware/sesion.js";
 import indexRouter from "./routes/index.js";
+import perfilRouter from "./routes/perfil.js";
 
 const app = express();
 connectDatabase();
@@ -39,6 +40,7 @@ app.use("/dist", express.static("node_modules/bootstrap/dist"));
 // Rutas
 app.use("/auth", authRouter);
 app.use("/publicaciones", publicacionesRouter);
+app.use("/perfil", perfilRouter);
 
 app.use("/", indexRouter);
 
