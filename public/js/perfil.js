@@ -14,3 +14,23 @@ document
     };
     reader.readAsDataURL(file);
   });
+
+async function toggleSeguir(accion, usuarioId) {
+  const url = `/perfil/${accion}/${usuarioId}`;
+  const res = await fetch(url, { method: "POST" });
+  const data = await res.json();
+  if (data.ok) location.reload();
+  else alert(data.error || "Error al procesar la acción.");
+}
+const btnSeguir = document.getElementById("btnSeguir");
+if (btnSeguir) {
+  btnSeguir.addEventListener("click", () =>
+    toggleSeguir("seguir", btnSeguir.dataset.id),
+  );
+}
+const btnDejarDeSeguir = document.getElementById("btnDejarDeSeguir");
+if (btnDejarDeSeguir) {
+  btnDejarDeSeguir.addEventListener("click", () =>
+    toggleSeguir("dejar-de-seguir", btnDejarDeSeguir.dataset.id),
+  );
+}

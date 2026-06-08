@@ -7,6 +7,8 @@ import { connectDatabase } from "./db/config.js";
 import { cargarUsuarioSesion } from "./middleware/sesion.js";
 import indexRouter from "./routes/index.js";
 import perfilRouter from "./routes/perfil.js";
+import adminRouter from "./routes/admin.js";
+import notificacionesRouter from "./routes/notificaciones.js";
 
 const app = express();
 connectDatabase();
@@ -41,7 +43,8 @@ app.use("/dist", express.static("node_modules/bootstrap/dist"));
 app.use("/auth", authRouter);
 app.use("/publicaciones", publicacionesRouter);
 app.use("/perfil", perfilRouter);
-
+app.use("/admin", adminRouter);
+app.use("/notificaciones", notificacionesRouter);
 app.use("/", indexRouter);
 
 // Servidor

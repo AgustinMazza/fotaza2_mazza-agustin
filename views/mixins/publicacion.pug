@@ -36,5 +36,7 @@ mixin tarjetaPublicacion(pub)
               span.badge.bg-primary.me-1.mb-1 ##{tag.nombre}
 
       .card-footer.text-muted.d-flex.justify-content-between.small
-        span Por #{pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo'}
+        - const autorNombre = pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo'
+        - const autorHref = '/perfil/' + pub.usuario_id
+        a(href=autorHref) Por: #{autorNombre}
         span= new Date(pub.fecha_creacion).toLocaleDateString('es-AR')

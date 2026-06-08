@@ -31,54 +31,80 @@ block content
           .col
             h3.fw-bold.mb-0= usuario.nombre_usuario
             p.text-muted.mb-2= usuario.descripcion || "Sin descripción todavía."
-            button.btn.btn-sm.btn-outline-primary(
-              data-bs-toggle="collapse"
-              data-bs-target="#formEditarPerfil"
-            ) ✏️ Editar perfil
+
+            //Contadores seguidores/seguidos
+            .d-flex.gap-3.mb-2
+              span.small
+                strong= cantPublicaciones
+                |  publicaciones
+              span.small
+                strong= cantSeguidores
+                |  seguidores
+              span.small
+                strong= cantSeguidos
+                |  siguiendo
+
+            //Botón seguir (solo en perfil ajeno)
+            if !miPerfil
+              if yaLoSigo
+                button.btn.btn-sm.btn-secondary#btnDejarDeSeguir(
+                  data-id=usuario.id
+                ) ✓ Seguido
+              else
+                button.btn.btn-sm.btn-primary#btnSeguir(
+                  data-id=usuario.id
+                ) + Seguir
+
+            if miPerfil
+              button.btn.btn-sm.btn-outline-primary(
+                data-bs-toggle="collapse"
+                data-bs-target="#formEditarPerfil"
+              ) ✏️ Editar perfil
 
           //Form editar (colapsable)
           .col-12
-            #formEditarPerfil.collapse
-              hr
-              form(action="/perfil/actualizar" method="POST")
-                .mb-2
-                  label.form-label.small Descripción
-                  textarea.form-control.form-control-sm(
-                    name="descripcion"
-                    rows="2"
-                    placeholder="Contá algo sobre vos..."
-                  )= usuario.descripcion || ""
-                .mb-2
-                  label.form-label.small Foto de perfil
-                  .d-flex.align-items-center.gap-3.mt-1
-                    //Preview
-                    #previewFotoPerfil
-                      if usuario.foto_perfil
-                        img.rounded-circle(
-                          src=usuario.foto_perfil
-                          width="60" height="60"
-                          style="object-fit:cover;"
+            if miPerfil
+              #formEditarPerfil.collapse
+                hr
+                form(action="/perfil/actualizar" method="POST")
+                  .mb-2
+                    label.form-label.small Descripción
+                    textarea.form-control.form-control-sm(
+                      name="descripcion"
+                      rows="2"
+                      placeholder="Contá algo sobre vos..."
+                    )= usuario.descripcion || ""
+                  .mb-2
+                    label.form-label.small Foto de perfil
+                    .d-flex.align-items-center.gap-3.mt-1
+                      //Preview
+                      #previewFotoPerfil
+                        if usuario.foto_perfil
+                          img.rounded-circle(
+                            src=usuario.foto_perfil
+                            width="60" height="60"
+                            style="object-fit:cover;"
+                          )
+                        else
+                          .rounded-circle.bg-secondary.d-flex.align-items-center.justify-content-center(
+                            style="width:60px;height:60px;"
+                          )
+                            span.text-white= usuario.nombre_usuario[0].toUpperCase()
+                      div
+                        button.btn.btn-sm.btn-outline-secondary(
+                          type="button"
+                          onclick="document.getElementById('inputFotoPerfil').click()"
+                        ) 📁 Elegir foto
+                        input#inputFotoPerfil(
+                          type="file"
+                          accept="image/*"
+                          style="display:none"
                         )
-                      else
-                        .rounded-circle.bg-secondary.d-flex.align-items-center.justify-content-center(
-                          style="width:60px;height:60px;"
+                        input#inputFotoPerfilBase64(
+                          type="hidden"
+                          name="foto_perfil"
                         )
-                          span.text-white= usuario.nombre_usuario[0].toUpperCase()
-                    div
-                      button.btn.btn-sm.btn-outline-secondary(
-                        type="button"
-                        onclick="document.getElementById('inputFotoPerfil').click()"
-                      ) 📁 Elegir foto
-                      input#inputFotoPerfil(
-                        type="file"
-                        accept="image/*"
-                        style="display:none"
-                      )
-                      input#inputFotoPerfilBase64(
-                        type="hidden"
-                        name="foto_perfil"
-                      )
-                button.btn.btn-sm.btn-primary(type="submit") Guardar
+                  button.btn.btn-sm.btn-primary(type="submit") Guardar
 
     //Publicaciones
     h5.fw-bold.mb-3 Mis publicaciones (#{publicaciones.length})
@@ -121,6 +147,12 @@ block content
                   span#promedioEstrellas.fs-5
                   span#textoPromedio.text-muted.small
 
+                .mb-3.p-2.bg-light.rounded 
+                  p.small.text-muted.mb-1 Tu valoración:
+                  #estrellasContenedor.fs-4(style="cursor:pointer;")
+                    each val in [1,2,3,4,5]
+                      span.estrella-voto.text-muted(data-valor=val) ★
+
                 h6.fw-bold.small.text-secondary Comentarios
                 #listaComentarios.mb-2
                   p.text-muted.small.text-center.pt-1 No hay comentarios aún.
@@ -137,12 +169,35 @@ block content
                 #btnToggleComentariosWrap.d-none.mt-1
                   button#btnToggleComentarios.btn.btn-sm.btn-outline-secondary.w-100(type="button")
 
+
                 .d-flex.gap-2.mt-2
-                  button#btnDenuncia.btn.btn-sm.btn-outline-danger(type="button") 🚨 Denunciar
+                  div
+                    button#btnDenuncia.btn.btn-sm.btn-outline-danger(type="button") 🚨 Denunciar
+                    #formDenunciaWrap.d-none.mt-2.p-2.border.rounded.bg-light(style="font-size:13px;")
+                      select#selectMotivo.form-select.form-select-sm.mb-1
+                        option(value="") — Seleccioná un motivo —
+                        option(value="contenido_inapropiado") Contenido inapropiado
+                        option(value="derechos_de_autor") Derechos de autor
+                        option(value="spam") Spam
+                        option(value="violencia") Violencia
+                        option(value="otro") Otro
+                      textarea#textaDenuncia.form-control.form-control-sm.mb-1(
+                        rows="2"
+                        placeholder="Descripción (opcional)"
+                      )
+                      button#btnEnviarDenuncia.btn.btn-sm.btn-danger.w-100 Enviar denuncia
                   button#btnMeInteresa.btn.btn-sm.btn-outline-success(type="button") 💛 Me interesa
+                
+    
+                  //Panel me interesa - confirmacion
+                  #panelMeInteresa.d-none.border-top.p-2.bg-light
+                    p.small.fw-bold.mb-1 ¡Interés registrado! El autor fue notificado.
+                    p#datosMeInteresa.small.text-muted.mb-0
+
 
   script.
     var publicaciones = !{JSON.stringify(publicaciones)};
     var usuarioId     = !{JSON.stringify(usuarioId)};
+
   script(src="/js/publicaciones.js")
   script(src="/js/perfil.js")

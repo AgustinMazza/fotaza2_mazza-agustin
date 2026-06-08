@@ -1,0 +1,45 @@
+extends layout.pug
+
+block metadata
+  title Panel Admin - Fotaza
+
+block content
+  .container.py-4
+    h4.fw-bold.mb-4 ⚙️ Panel de moderación
+
+    if publicaciones.length === 0
+      .alert.alert-success No hay publicaciones pendientes de revisión. ✅
+    else
+      each pub in publicaciones
+        .card.mb-4.shadow-sm
+          .card-header.d-flex.justify-content-between.align-items-center
+            div
+              strong= pub.titulo
+              span.text-muted.ms-2.small Por: #{pub.Usuario.nombre_usuario}
+            form(action='/admin/dar-de-baja/' + pub.id method='POST')
+              button.btn.btn-sm.btn-danger(type='submit'
+                onclick='return confirm("¿Dar de baja esta publicación?")') 🗑 Dar de baja
+
+          .card-body
+            each img in pub.imagenes
+              .border.rounded.p-3.mb-3
+                .row.align-items-start.g-3
+                  .col-md-4
+                    img.img-fluid.rounded(
+                      src='data:image/jpeg;base64,' + img.base64
+                      style='max-height:200px; object-fit:cover; width:100%;'
+                    )
+                  .col-md-8
+                    .d-flex.justify-content-between.align-items-center.mb-2
+                      span.badge.bg-danger 🚨 #{img.Denuncias.length} denuncias
+                      form(action='/admin/desestimar/' + img.id method='POST')
+                        button.btn.btn-sm.btn-outline-secondary(type='submit'
+                          onclick='return confirm("¿Desestimar todas las denuncias de esta imagen?")') ✅ Desestimar
+
+                    each denuncia in img.Denuncias
+                      .mb-2.p-2.bg-light.rounded
+                        .d-flex.justify-content-between
+                          span.small.fw-bold= denuncia.Usuario.nombre_usuario
+                          span.badge.bg-secondary= denuncia.motivo
+                        if denuncia.descripcion
+                          p.small.text-muted.mb-0= denuncia.descripcion

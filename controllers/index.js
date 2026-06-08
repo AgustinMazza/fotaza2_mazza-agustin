@@ -16,6 +16,7 @@ export const getIndex = async (req, res) => {
     const usuarioId = req.session?.usuario?.id || null;
 
     const lista = await Publicacion.findAll({
+      where: { activa: true },
       include: [
         {
           model: Imagen,

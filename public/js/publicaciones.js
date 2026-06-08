@@ -115,29 +115,51 @@
     actualizarPromedio(imagenActual.promedio, imagenActual.cantVotos);
     imagenActual.miVoto ? iluminarHasta(imagenActual.miVoto) : resetEstrellas();
 
-    //Estado denuncia
-    if (imagenActual.yaDenuncio) {
-      btnDenuncia.textContent = "🚨 Denunciada";
-      btnDenuncia.disabled = true;
-      btnDenuncia.className = "btn btn-sm btn-danger";
+    //Denuncia- ocultar al autor
+    if (pubActual.esAutor) {
+      btnDenuncia.classList.add("d-none");
+      formDenunciaWrap.classList.add("d-none");
     } else {
-      btnDenuncia.textContent = "🚨 Denunciar";
-      btnDenuncia.disabled = false;
-      btnDenuncia.className = "btn btn-sm btn-outline-danger";
+      btnDenuncia.classList.remove("d-none");
+      if (imagenActual.yaDenuncio) {
+        btnDenuncia.textContent = "🚨 Denunciada";
+        btnDenuncia.disabled = true;
+        btnDenuncia.className = "btn btn-sm btn-danger";
+      } else {
+        btnDenuncia.textContent = "🚨 Denunciar";
+        btnDenuncia.disabled = false;
+        btnDenuncia.className = "btn btn-sm btn-outline-danger";
+      }
+      formDenunciaWrap.classList.add("d-none");
     }
-    formDenunciaWrap.classList.add("d-none");
 
-    //Estado me interesa
-    if (imagenActual.yaMeInteresa) {
-      btnMeInteresa.textContent = "💛 Ya me interesa";
-      btnMeInteresa.disabled = true;
-      btnMeInteresa.className = "btn btn-sm btn-success";
+    //Me interesa- ocultar al autor
+    if (pubActual.esAutor) {
+      btnMeInteresa.classList.add("d-none");
+      panelMeInteresa.classList.add("d-none");
     } else {
-      btnMeInteresa.textContent = "💛 Me interesa";
-      btnMeInteresa.disabled = false;
-      btnMeInteresa.className = "btn btn-sm btn-outline-success";
+      btnMeInteresa.classList.remove("d-none");
+      if (imagenActual.yaMeInteresa) {
+        btnMeInteresa.textContent = "💛 Ya me interesa";
+        btnMeInteresa.disabled = true;
+        btnMeInteresa.className = "btn btn-sm btn-success";
+      } else {
+        btnMeInteresa.textContent = "💛 Me interesa";
+        btnMeInteresa.disabled = false;
+        btnMeInteresa.className = "btn btn-sm btn-outline-success";
+      }
+      panelMeInteresa.classList.add("d-none");
     }
-    panelMeInteresa.classList.add("d-none");
+
+    //Si la publi es mia, no deja votar
+    var seccionVoto = document
+      .getElementById("estrellasContenedor")
+      .closest(".mb-3.p-2.bg-light.rounded");
+    if (pubActual.esAutor) {
+      seccionVoto.classList.add("d-none");
+    } else {
+      seccionVoto.classList.remove("d-none");
+    }
   }
 
   function actualizarPromedio(promedio, cant) {
@@ -147,7 +169,13 @@
       return;
     }
     var llenas = Math.round(parseFloat(promedio));
-    promedioEl.textContent = "★".repeat(llenas) + "☆".repeat(5 - llenas);
+    promedioEl.innerHTML =
+      "<span style='color:#ffc107;'>" +
+      "★".repeat(llenas) +
+      "</span>" +
+      "<span style='color:#ccc;'>" +
+      "☆".repeat(5 - llenas) +
+      "</span>";
     textoPromedio.textContent =
       promedio + " · " + cant + (cant === 1 ? " voto" : " votos");
   }

@@ -12,6 +12,7 @@ import {
 import { validador } from "../validaciones/publi.js";
 import { aplicarMarcaAgua } from "../helpers/marcaAgua.js";
 import { blobABase64 } from "../helpers/imagen.js";
+import { crearNotificacion } from "../helpers/notificacion.js";
 
 //Publicaciones
 export const getPublicaciones = async (req, res) => {
@@ -19,6 +20,7 @@ export const getPublicaciones = async (req, res) => {
     const usuarioId = req.session?.usuario?.id || null;
 
     const lista = await Publicacion.findAll({
+      where: { activa: true },
       include: [
         {
           model: Imagen,
@@ -205,6 +207,13 @@ export const postComentar = async (req, res) => {
       bloqueado: false,
     });
 
+    await crearNotificacion({
+      usuarioId: pub.usuario_id,
+      origenId: req.session.usuario.id,
+      tipo: "comentario",
+      mensaje: `${req.session.usuario.nombre_usuario} comentó tu publicación.`,
+    });
+
     res.json({
       id: nuevo.id,
       texto: nuevo.texto,
@@ -268,6 +277,15 @@ export const postVotar = async (req, res) => {
     const promedio = (
       todas.reduce((s, r) => s + r.estrellas, 0) / cantVotos
     ).toFixed(1);
+
+    const pubDeLaImagen = await Publicacion.findByPk(imagen.publicacion_id);
+    await crearNotificacion({
+      usuarioId: pubDeLaImagen.usuario_id,
+      origenId: req.session.usuario.id,
+      tipo: "valoracion",
+      mensaje: `${req.session.usuario.nombre_usuario} valoró una de tus imágenes.`,
+    });
+
     res.json({ ok: true, promedio, cantVotos });
   } catch (error) {
     console.error("Error al votar:", error);
@@ -334,6 +352,14 @@ export const postMeInteresa = async (req, res) => {
     await MeInteresa.create({ imagen_id: parseInt(imagen_id), usuario_id });
 
     const autor = imagen.Publicacion.Usuario;
+
+    await crearNotificacion({
+      usuarioId: imagen.Publicacion.usuario_id,
+      origenId: req.session.usuario.id,
+      tipo: "me_interesa",
+      mensaje: `${req.session.usuario.nombre_usuario} está interesado en una de tus imágenes.`,
+    });
+
     res.json({
       ok: true,
       autorNombre: autor.nombre_usuario,

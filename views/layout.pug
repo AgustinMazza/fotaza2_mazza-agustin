@@ -60,8 +60,14 @@ html(lang="es")
                     a.dropdown-item(href="/perfil")
                       | 👤&nbsp; Mi perfil
                   li
-                    a.dropdown-item(href="/colecciones")
-                      | 🗂️&nbsp; Mis colecciones
+                    a.dropdown-item(href="/perfil/seguidores")
+                      | 👥&nbsp; Mis seguidores
+                  li
+                    a.dropdown-item(href="/perfil/siguiendo")
+                      | 🔭&nbsp; Siguiendo
+                  li
+                    a.dropdown-item(href="/notificaciones")
+                      | 🔔&nbsp; Notificaciones
                   if usuarioSesion.admin
                     li
                       hr.dropdown-divider

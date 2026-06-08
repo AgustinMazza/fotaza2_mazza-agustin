@@ -11,6 +11,7 @@ import Seguidor from "./Seguidor.js";
 import PublicacionEtiqueta from "./PublicacionEtiqueta.js";
 import ColeccionPublicacion from "./ColeccionPublicacion.js";
 import MeInteresa from "./MeInteresa.js";
+import Notificacion from "./Notificacion.js";
 
 // Usuario 1-n Publicacion
 Usuario.hasMany(Publicacion, { foreignKey: "usuario_id" });
@@ -48,6 +49,10 @@ MeInteresa.belongsTo(Imagen, { foreignKey: "imagen_id" });
 Usuario.hasMany(Coleccion, { foreignKey: "usuario_id" });
 Coleccion.belongsTo(Usuario, { foreignKey: "usuario_id" });
 
+// Usuario 1-n Notificacion
+Usuario.hasMany(Notificacion, { foreignKey: "usuario_id" });
+Notificacion.belongsTo(Usuario, { as: "origen", foreignKey: "origen_id" });
+
 // Publicacion n-m Etiqueta (por PublicacionEtiqueta)
 Publicacion.belongsToMany(Etiqueta, {
   through: PublicacionEtiqueta,
@@ -68,13 +73,22 @@ Publicacion.belongsToMany(Coleccion, {
   foreignKey: "publicacion_id",
 });
 
-// AUTOREFERENCIA: Seguidores (Usuario n-m Usuario)
+// AUTOREFERENCIA: Seguidores y Seguidos(Usuario n-m Usuario)
 Usuario.belongsToMany(Usuario, {
   as: "Seguidores",
   through: Seguidor,
   foreignKey: "seguido_id",
   otherKey: "seguidor_id",
 });
+Usuario.belongsToMany(Usuario, {
+  as: "Seguidos",
+  through: Seguidor,
+  foreignKey: "seguidor_id",
+  otherKey: "seguido_id",
+});
+
+Seguidor.belongsTo(Usuario, { as: "seguidor", foreignKey: "seguidor_id" });
+Seguidor.belongsTo(Usuario, { as: "seguido", foreignKey: "seguido_id" });
 
 export {
   Usuario,
@@ -89,4 +103,5 @@ export {
   PublicacionEtiqueta,
   ColeccionPublicacion,
   MeInteresa,
+  Notificacion,
 };
