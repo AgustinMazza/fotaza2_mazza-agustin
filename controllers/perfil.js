@@ -205,7 +205,10 @@ export const getPerfilPublico = async (req, res) => {
           include: [{ model: Reaccion }],
         },
         { model: Etiqueta },
-        { model: Comentario },
+        {
+          model: Comentario,
+          include: [{ model: Usuario, attributes: ["id", "nombre_usuario"] }],
+        },
         { model: Usuario },
       ],
       order: [["fecha_creacion", "DESC"]],

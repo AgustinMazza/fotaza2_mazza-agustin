@@ -39,4 +39,4 @@ mixin tarjetaPublicacion(pub)
         - const autorNombre = pub.Usuario ? pub.Usuario.nombre_usuario : 'Anónimo'
         - const autorHref = '/perfil/' + pub.usuario_id
         a(href=autorHref) Por: #{autorNombre}
-        span= new Date(pub.fecha_creacion).toLocaleDateString('es-AR')
+        span= new Date(pub.fecha_creacion).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
