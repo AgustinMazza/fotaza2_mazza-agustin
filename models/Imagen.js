@@ -7,7 +7,6 @@ const Imagen = sequelize.define("Imagen", {
   publicacion_id: { type: DataTypes.INTEGER, allowNull: false },
   copyright: { type: DataTypes.BOOLEAN, defaultValue: false },
   marca_agua: { type: DataTypes.STRING, defaultValue: "" },
-  cont_denuncias: { type: DataTypes.INTEGER, defaultValue: 0 },
   bloqueada: { type: DataTypes.BOOLEAN, defaultValue: false },
 });
 

@@ -19,7 +19,18 @@ block content
               span.badge.me-2(
                 class=n.tipo === 'comentario' ? 'bg-primary' : n.tipo === 'valoracion' ? 'bg-warning text-dark' : n.tipo === 'me_interesa' ? 'bg-success' : 'bg-secondary'
               )= n.tipo
-              span= n.mensaje
+              span
+                case n.tipo
+                  when 'comentario'
+                    | #{n.origen.nombre_usuario} comentó tu publicación
+                  when 'valoracion'
+                    | #{n.origen.nombre_usuario} valoró una de tus imágenes
+                  when 'me_interesa'
+                    | #{n.origen.nombre_usuario} está interesado en una de tus imágenes
+                  when 'seguidor'
+                    | #{n.origen.nombre_usuario} comenzó a seguirte
+                  default
+                    | Nueva notificación
               div.small.text-muted.mt-1= new Date(n.fecha).toLocaleString('es-AR')
             if !n.leida
               button.btn.btn-sm.btn-outline-secondary.marcar-leida(

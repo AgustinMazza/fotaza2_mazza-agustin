@@ -173,7 +173,6 @@ export const postDejarDeSeguir = async (req, res) => {
       usuarioId: seguidoId,
       origenId: seguidorId,
       tipo: "seguidor",
-      mensaje: `${req.session.usuario.nombre_usuario} comenzó a seguirte.`,
     });
 
     return res.json({ ok: true });

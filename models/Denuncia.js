@@ -6,7 +6,10 @@ const Denuncia = sequelize.define("Denuncia", {
   usuario_id: { type: DataTypes.INTEGER, allowNull: false },
   imagen_id: { type: DataTypes.INTEGER, allowNull: false },
   motivo: { type: DataTypes.STRING, allowNull: false },
-  estado: { type: DataTypes.STRING, defaultValue: "pendiente" },
+  estado: {
+    type: DataTypes.ENUM("pendiente", "aprobada", "desestimada"),
+    defaultValue: "pendiente",
+  },
 });
 
 export default Denuncia;

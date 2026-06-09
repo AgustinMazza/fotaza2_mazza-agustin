@@ -153,7 +153,6 @@ export const postCrearPublicacion = async (req, res) => {
         publicacion_id: nuevaPublicacion.id,
         copyright: tieneCopyright,
         marca_agua: textoMarca,
-        cont_denuncias: 0,
         bloqueada: false,
       });
     }
@@ -211,7 +210,6 @@ export const postComentar = async (req, res) => {
       usuarioId: pub.usuario_id,
       origenId: req.session.usuario.id,
       tipo: "comentario",
-      mensaje: `${req.session.usuario.nombre_usuario} comentó tu publicación.`,
     });
 
     res.json({
@@ -283,7 +281,6 @@ export const postVotar = async (req, res) => {
       usuarioId: pubDeLaImagen.usuario_id,
       origenId: req.session.usuario.id,
       tipo: "valoracion",
-      mensaje: `${req.session.usuario.nombre_usuario} valoró una de tus imágenes.`,
     });
 
     res.json({ ok: true, promedio, cantVotos });
@@ -357,7 +354,6 @@ export const postMeInteresa = async (req, res) => {
       usuarioId: imagen.Publicacion.usuario_id,
       origenId: req.session.usuario.id,
       tipo: "me_interesa",
-      mensaje: `${req.session.usuario.nombre_usuario} está interesado en una de tus imágenes.`,
     });
 
     res.json({
