@@ -8,6 +8,7 @@ import {
   postVotar,
   postDenunciar,
   postMeInteresa,
+  postEditarPublicacion,
 } from "../controllers/publicacion.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -22,5 +23,5 @@ router.post("/toggle-comentarios", requireAuth, postToggleComentarios);
 router.post("/votar", requireAuth, postVotar);
 router.post("/denunciar", requireAuth, postDenunciar);
 router.post("/me-interesa", requireAuth, postMeInteresa);
-
+router.post("/:id/editar", requireAuth, postEditarPublicacion);
 export default router;

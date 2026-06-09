@@ -92,6 +92,25 @@ block content
                 #btnToggleComentariosWrap.d-none.mt-1
                   button#btnToggleComentarios.btn.btn-sm.btn-outline-secondary.w-100(type="button")
 
+                //Editar publicacion (solo autor)
+                #btnEditarWrap.d-none.mt-1
+                  #alertaEditar.d-none.alert.alert-warning.py-1.px-2.small.mb-2
+                  button#btnEditarToggle.btn.btn-sm.btn-outline-primary.w-100(
+                    type="button"
+                  ) ✏️ Editar publicación
+                  #formEditarPublicacion.collapse.mt-2.p-2.border.rounded.bg-light
+                    .mb-2
+                      label.form-label.small.mb-1 Título *
+                      input#editTitulo.form-control.form-control-sm(type="text" name="titulo")
+                    .mb-2
+                      label.form-label.small.mb-1 Descripción
+                      textarea#editDescripcion.form-control.form-control-sm(rows="2")
+                    .mb-2
+                      label.form-label.small.mb-1 Etiquetas
+                        span.text-muted  (separadas por coma)
+                      input#editEtiquetas.form-control.form-control-sm(type="text")
+                    button#btnGuardarEdicion.btn.btn-sm.btn-primary.w-100(type="button") 💾 Guardar cambios
+
                 //Acciones🚨
                 .d-flex.gap-2.mt-2
                   div

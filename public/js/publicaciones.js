@@ -23,7 +23,12 @@
   var btnMeInteresa = document.getElementById("btnMeInteresa");
   var panelMeInteresa = document.getElementById("panelMeInteresa");
   var datosMeInteresa = document.getElementById("datosMeInteresa");
-
+  var btnEditarWrap = document.getElementById("btnEditarWrap");
+  var alertaEditar = document.getElementById("alertaEditar");
+  var editTitulo = document.getElementById("editTitulo");
+  var editDescripcion = document.getElementById("editDescripcion");
+  var editEtiquetas = document.getElementById("editEtiquetas");
+  var btnGuardarEdicion = document.getElementById("btnGuardarEdicion");
   var pubActual = null;
   var imagenActual = null;
 
@@ -91,12 +96,30 @@
     var cerrados = pubActual.comentariosCerrados;
     seccionComentar.classList.toggle("d-none", cerrados);
     msgCerrado.classList.toggle("d-none", !cerrados);
-    //Btn toggle: solo para autor
+    //Btn toggle: solo autor
     btnToggleWrap.classList.toggle("d-none", !pubActual.esAutor);
+    //Btn editar: solo autor
+    if (pubActual.esAutor) {
+      btnEditarWrap.classList.remove("d-none");
+      editTitulo.value = pubActual.titulo || "";
+      editDescripcion.value = pubActual.descripcion || "";
+      editEtiquetas.value = (pubActual.Etiquetas || [])
+        .map(function (e) {
+          return e.nombre;
+        })
+        .join(", ");
+      alertaEditar.classList.add("d-none");
+    } else {
+      btnEditarWrap.classList.add("d-none");
+    }
     actualizarBotonToggle(cerrados);
 
     formDenunciaWrap.classList.add("d-none");
     panelMeInteresa.classList.add("d-none");
+
+    var collapseEditar = document.getElementById("formEditarPublicacion");
+    var instancia = bootstrap.Collapse.getInstance(collapseEditar);
+    if (instancia) instancia.hide();
   });
 
   //Cambio de slide
@@ -141,7 +164,7 @@
       btnMeInteresa.classList.remove("d-none");
       if (imagenActual.yaMeInteresa) {
         btnMeInteresa.textContent = "💛 Ya me interesa";
-        btnMeInteresa.disabled = true;
+        btnMeInteresa.disabled = false;
         btnMeInteresa.className = "btn btn-sm btn-success";
       } else {
         btnMeInteresa.textContent = "💛 Me interesa";
@@ -366,15 +389,107 @@
         });
       })
       .then(function (data) {
-        btnMeInteresa.textContent = "💛 Ya me interesa";
-        btnMeInteresa.disabled = true;
-        btnMeInteresa.className = "btn btn-sm btn-success";
-        imagenActual.yaMeInteresa = true;
-        datosMeInteresa.textContent = data.autorNombre + " · " + data.autorMail;
-        panelMeInteresa.classList.remove("d-none");
+        imagenActual.yaMeInteresa = data.activo;
+        if (data.activo) {
+          btnMeInteresa.textContent = "💛 Ya me interesa";
+          btnMeInteresa.className = "btn btn-sm btn-success";
+          datosMeInteresa.textContent =
+            data.autorNombre + " · " + data.autorMail;
+          panelMeInteresa.classList.remove("d-none");
+        } else {
+          btnMeInteresa.textContent = "💛 Me interesa";
+          btnMeInteresa.className = "btn btn-sm btn-outline-success";
+          panelMeInteresa.classList.add("d-none");
+          datosMeInteresa.textContent = "";
+        }
       })
       .catch(function (err) {
         alert(err.message);
       });
   });
+
+  //Guardar edicion Publicacion
+  btnGuardarEdicion.addEventListener("click", function () {
+    if (!pubActual) return;
+    alertaEditar.classList.add("d-none");
+
+    fetch("/publicaciones/" + pubActual.id + "/editar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        titulo: editTitulo.value,
+        descripcion: editDescripcion.value,
+        etiquetas: editEtiquetas.value,
+      }),
+    })
+      .then(function (r) {
+        return r.json().then(function (d) {
+          return { ok: r.ok, data: d };
+        });
+      })
+      .then(function (res) {
+        if (!res.ok) {
+          alertaEditar.textContent = res.data.error;
+          alertaEditar.classList.remove("d-none");
+          return;
+        }
+        //Actualizamos datos para que se vean sin recargar
+        pubActual.titulo = res.data.titulo;
+        pubActual.descripcion = res.data.descripcion;
+        document.getElementById("modalTitulo").textContent = res.data.titulo;
+
+        bootstrap.Collapse.getOrCreateInstance(
+          document.getElementById("formEditarPublicacion"),
+        ).hide();
+        alertaEditar.textContent = "✅ ¡Publicación editada con éxito!";
+        alertaEditar.classList.remove("d-none");
+        alertaEditar.classList.remove("alert-warning");
+        alertaEditar.classList.add("alert-success");
+        // Volver a warning para la proxima vez
+        setTimeout(function () {
+          alertaEditar.classList.add("d-none");
+          alertaEditar.classList.remove("alert-success");
+          alertaEditar.classList.add("alert-warning");
+        }, 3000);
+      })
+      .catch(function () {
+        alertaEditar.textContent = "Error al guardar. Intentá de nuevo.";
+        alertaEditar.classList.remove("d-none");
+      });
+  });
+
+  //verifica denuncia antes de Editar Publicacion
+  document
+    .getElementById("btnEditarToggle")
+    .addEventListener("click", function () {
+      if (!pubActual) return;
+      alertaEditar.classList.add("d-none");
+
+      fetch("/publicaciones/" + pubActual.id + "/editar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ soloVerificar: true }),
+      })
+        .then(function (r) {
+          return r.json().then(function (d) {
+            return { ok: r.ok, data: d };
+          });
+        })
+        .then(function (res) {
+          if (!res.ok) {
+            //denuncia, no abre y error
+            alertaEditar.textContent = res.data.error;
+            alertaEditar.classList.remove("d-none");
+            return;
+          }
+          //no denuncia, abre
+          bootstrap.Collapse.getOrCreateInstance(
+            document.getElementById("formEditarPublicacion"),
+          ).show();
+        })
+        .catch(function () {
+          alertaEditar.textContent = "Error al verificar. Intentá de nuevo.";
+          alertaEditar.classList.remove("d-none");
+        });
+    });
 })();

@@ -338,18 +338,20 @@ export const postMeInteresa = async (req, res) => {
         .status(403)
         .json({ error: "No podés marcar interés en tu propia foto." });
 
-    const yaExiste = await MeInteresa.findOne({
+    const existente = await MeInteresa.findOne({
       where: { imagen_id: parseInt(imagen_id), usuario_id },
     });
-    if (yaExiste)
-      return res
-        .status(409)
-        .json({ error: "Ya marcaste interés en esta imagen." });
 
+    //si ya esta, lo sacamos (toggle)
+    if (existente) {
+      await existente.destroy();
+      return res.json({ ok: true, activo: false });
+    }
+
+    //sino lo hacemos
     await MeInteresa.create({ imagen_id: parseInt(imagen_id), usuario_id });
 
     const autor = imagen.Publicacion.Usuario;
-
     await crearNotificacion({
       usuarioId: imagen.Publicacion.usuario_id,
       origenId: req.session.usuario.id,
@@ -358,11 +360,88 @@ export const postMeInteresa = async (req, res) => {
 
     res.json({
       ok: true,
+      activo: true,
       autorNombre: autor.nombre_usuario,
       autorMail: autor.mail,
     });
   } catch (error) {
     console.error("Error en me-interesa:", error);
     res.status(500).send("Error");
+  }
+};
+
+//Post publicaciones/:id/editar
+export const postEditarPublicacion = async (req, res) => {
+  try {
+    const pub = await Publicacion.findByPk(req.params.id);
+    if (!pub) return res.status(404).json({ error: "No encontrada" });
+    if (pub.usuario_id !== req.session.usuario.id)
+      return res.status(403).json({ error: "Sin permiso" });
+
+    if (req.body.soloVerificar) {
+      const imagenes = await Imagen.findAll({
+        where: { publicacion_id: pub.id },
+        attributes: ["id"],
+      });
+      const imagenesIds = imagenes.map((i) => i.id);
+      const tieneDenuncia =
+        imagenesIds.length > 0
+          ? await Denuncia.findOne({ where: { imagen_id: imagenesIds } })
+          : null;
+      if (tieneDenuncia)
+        return res.status(403).json({
+          error:
+            "No podés editar esta publicación porque al menos una de sus imágenes tiene una denuncia.",
+        });
+      return res.json({ ok: true });
+    }
+    const imagenes = await Imagen.findAll({
+      where: { publicacion_id: pub.id },
+      attributes: ["id"],
+    });
+    const imagenesIds = imagenes.map((i) => i.id);
+    const tieneDenuncia =
+      imagenesIds.length > 0
+        ? await Denuncia.findOne({ where: { imagen_id: imagenesIds } })
+        : null;
+
+    if (tieneDenuncia)
+      return res.status(403).json({
+        error:
+          "No podés editar esta publicación porque al menos una de sus imágenes tiene una denuncia.",
+      });
+
+    const { titulo, descripcion, etiquetas } = req.body;
+    if (!titulo || !titulo.trim())
+      return res.status(400).json({ error: "El título es obligatorio." });
+
+    await pub.update({
+      titulo: titulo.trim(),
+      descripcion: descripcion?.trim() || null,
+    });
+
+    await PublicacionEtiqueta.destroy({ where: { publicacion_id: pub.id } });
+    const lista = (etiquetas || "")
+      .split(",")
+      .map((e) => e.trim())
+      .filter((e) => e !== "");
+    for (const nombre of lista) {
+      const [etiqueta] = await Etiqueta.findOrCreate({
+        where: { nombre: nombre.toLowerCase() },
+      });
+      await PublicacionEtiqueta.create({
+        publicacion_id: pub.id,
+        etiqueta_id: etiqueta.id,
+      });
+    }
+
+    res.json({
+      ok: true,
+      titulo: titulo.trim(),
+      descripcion: descripcion?.trim() || "",
+    });
+  } catch (error) {
+    console.error("Error al editar publicación:", error);
+    res.status(500).json({ error: "Error interno" });
   }
 };
