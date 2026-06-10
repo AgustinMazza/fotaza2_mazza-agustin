@@ -9,6 +9,7 @@ import indexRouter from "./routes/index.js";
 import perfilRouter from "./routes/perfil.js";
 import adminRouter from "./routes/admin.js";
 import notificacionesRouter from "./routes/notificaciones.js";
+import buscarRouter from "./routes/buscar.js";
 
 const app = express();
 connectDatabase();
@@ -45,6 +46,7 @@ app.use("/publicaciones", publicacionesRouter);
 app.use("/perfil", perfilRouter);
 app.use("/admin", adminRouter);
 app.use("/notificaciones", notificacionesRouter);
+app.use("/buscador", buscarRouter);
 app.use("/", indexRouter);
 
 // Servidor

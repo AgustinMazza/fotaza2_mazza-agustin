@@ -31,7 +31,7 @@ mixin tarjetaPublicacion(pub)
           p.card-text.text-muted.small.text-truncate= pub.descripcion
 
         if pub.Etiquetas && pub.Etiquetas.length > 0
-          .mb-1
+          .mb-1.etiquetas-card
             each tag in pub.Etiquetas
               span.badge.bg-primary.me-1.mb-1 ##{tag.nombre}
 

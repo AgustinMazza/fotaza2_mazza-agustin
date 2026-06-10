@@ -2,9 +2,8 @@
   var modalEl = document.getElementById("modalPublicacion");
   var contenedor = document.getElementById("contenedorFotos");
   var indicadores = document.getElementById("indicadoresCarrusel");
-  var contador = document
-    .getElementById("contadorImagenes")
-    .querySelector("span");
+  var contadorEl = document.getElementById("contadorImagenes");
+  var contador = contadorEl ? contadorEl.querySelector("span") : null;
   var modalTitulo = document.getElementById("modalTitulo");
   var modalAutor = document.getElementById("modalAutor");
   var listaComent = document.getElementById("listaComentarios");
@@ -29,11 +28,14 @@
   var editDescripcion = document.getElementById("editDescripcion");
   var editEtiquetas = document.getElementById("editEtiquetas");
   var btnGuardarEdicion = document.getElementById("btnGuardarEdicion");
+  var modalEtiquetas = document.getElementById("modalEtiquetas");
+
   var pubActual = null;
   var imagenActual = null;
 
   //Abrir modal
   modalEl.addEventListener("show.bs.modal", function (e) {
+    if (!document.getElementById("contadorImagenes")) return;
     var id = e.relatedTarget.getAttribute("data-id");
     pubActual = publicaciones.find(function (p) {
       return String(p.id) === String(id);
@@ -44,6 +46,18 @@
     modalAutor.textContent =
       "Por: " +
       (pubActual.Usuario ? pubActual.Usuario.nombre_usuario : "Anónimo");
+
+    //Etiquetas clickeables
+    modalEtiquetas.innerHTML = "";
+    if (pubActual.Etiquetas && pubActual.Etiquetas.length > 0) {
+      pubActual.Etiquetas.forEach(function (etiq) {
+        var a = document.createElement("a");
+        a.href = "/buscador?etiqueta=" + encodeURIComponent(etiq.nombre);
+        a.className = "badge bg-secondary text-decoration-none me-1";
+        a.textContent = etiq.nombre;
+        modalEtiquetas.appendChild(a);
+      });
+    }
 
     //Carrusel
     contenedor.innerHTML = "";
@@ -436,7 +450,44 @@
         //Actualizamos datos para que se vean sin recargar
         pubActual.titulo = res.data.titulo;
         pubActual.descripcion = res.data.descripcion;
+        pubActual.Etiquetas = res.data.etiquetas || [];
         document.getElementById("modalTitulo").textContent = res.data.titulo;
+        // Actualizar la tarjeta
+        var card = document.querySelector(
+          '.card[data-id="' + pubActual.id + '"]',
+        );
+        if (card) {
+          var cardTitle = card.querySelector(".card-title");
+          if (cardTitle) cardTitle.textContent = res.data.titulo;
+          var cardText = card.querySelector(".card-text");
+          if (cardText) cardText.textContent = res.data.descripcion || "";
+          var badgesContainer = card.querySelector(".etiquetas-card");
+          if (badgesContainer) {
+            badgesContainer.innerHTML = "";
+            (res.data.etiquetas || []).forEach(function (etiq) {
+              var span = document.createElement("span");
+              span.className = "badge bg-primary me-1 mb-1";
+              span.textContent = "#" + etiq.nombre;
+              badgesContainer.appendChild(span);
+            });
+          }
+        }
+
+        bootstrap.Collapse.getOrCreateInstance(
+          document.getElementById("formEditarPublicacion"),
+        ).hide();
+        //actualiza el modal
+        modalEtiquetas.innerHTML = "";
+        pubActual.Etiquetas.forEach(function (etiq) {
+          var a = document.createElement("a");
+          a.href = "/buscador?etiqueta=" + encodeURIComponent(etiq.nombre);
+          a.className = "badge bg-secondary text-decoration-none me-1";
+          a.textContent = etiq.nombre;
+          modalEtiquetas.appendChild(a);
+        });
+        editEtiquetas.value = pubActual.Etiquetas.map(function (e) {
+          return e.nombre;
+        }).join(", ");
 
         bootstrap.Collapse.getOrCreateInstance(
           document.getElementById("formEditarPublicacion"),

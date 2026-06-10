@@ -435,10 +435,19 @@ export const postEditarPublicacion = async (req, res) => {
       });
     }
 
+    const pubConEtiquetas = await Publicacion.findByPk(pub.id, {
+      include: [{ model: Etiqueta }],
+    });
+    const etiquetasActualizadas = pubConEtiquetas.Etiqueta || [];
+    
     res.json({
       ok: true,
       titulo: titulo.trim(),
       descripcion: descripcion?.trim() || "",
+      etiquetas: etiquetasActualizadas.map((e) => ({
+        id: e.id,
+        nombre: e.nombre,
+      })),
     });
   } catch (error) {
     console.error("Error al editar publicación:", error);
