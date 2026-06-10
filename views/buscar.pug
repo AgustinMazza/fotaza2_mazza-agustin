@@ -1,4 +1,5 @@
 extends layout.pug
+include mixins/publicacion.pug
 
 block content
   h4.mb-4 🔍 Buscar
@@ -44,25 +45,7 @@ block content
       p.text-muted.small.mb-2 #{publicaciones.length} resultado(s)
       .row.row-cols-2.row-cols-md-4.g-3.mb-5
         each pub in publicaciones
-          .col
-            .card.h-100.shadow-sm(
-              style="cursor:pointer;"
-              data-bs-toggle="modal"
-              data-bs-target="#modalPublicacion"
-              data-id=pub.id
-            )
-              if pub.imagenes && pub.imagenes[0] && pub.imagenes[0].base64
-                img.card-img-top(
-                  src=`data:image/jpeg;base64,${pub.imagenes[0].base64}`
-                  alt=pub.titulo
-                  style="height:160px;object-fit:cover;"
-                )
-              .card-body.p-2
-                p.fw-semibold.mb-1.small= pub.titulo
-                a.text-muted.small(
-                  href=`/perfil/${pub.Usuario.nombre_usuario}`
-                  onclick="event.stopPropagation()"
-                )= "@" + pub.Usuario.nombre_usuario
+          +tarjetaPublicacion(pub)
 
   hr
 
@@ -108,7 +91,7 @@ block content
 
   include mixins/modal.pug
 
-block append metadata
+block append content
   script.
     var publicaciones = !{JSON.stringify(publicaciones)};
     var usuarioId = !{JSON.stringify(usuarioId || null)};

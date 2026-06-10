@@ -74,13 +74,14 @@ export const getBuscar = async (req, res) => {
         .filter((p) => p.imagenes && p.imagenes.length > 0)
         .map((p) => {
           const plain = p.get({ plain: true });
-          plain.imagenes = p.imagenes.map((img, idx) => {
-            const votos = img.Reaccions || [];
-            const cantVotos = votos.length;
+
+          plain.imagenes = (plain.imagenes || []).map((img) => {
+            const reacciones = img.Reaccions || [];
+            const cantVotos = reacciones.length;
             const promedio =
               cantVotos > 0
                 ? (
-                    votos.reduce((s, r) => s + r.estrellas, 0) / cantVotos
+                    reacciones.reduce((s, r) => s + r.estrellas, 0) / cantVotos
                   ).toFixed(1)
                 : null;
             return {
@@ -92,8 +93,8 @@ export const getBuscar = async (req, res) => {
               cantVotos,
               promedio,
               miVoto: usuarioId
-                ? votos.find((r) => r.usuario_id === usuarioId)?.estrellas ||
-                  null
+                ? reacciones.find((r) => r.usuario_id === usuarioId)
+                    ?.estrellas || null
                 : null,
               yaDenuncio: usuarioId
                 ? (img.Denuncias || []).some((d) => d.usuario_id === usuarioId)
@@ -105,6 +106,7 @@ export const getBuscar = async (req, res) => {
                 : false,
             };
           });
+
           plain.Comentarios = plain.Comentarios || [];
           plain.comentariosCerrados = plain.comentarios_cerrados || false;
           plain.esAutor = usuarioId ? usuarioId === plain.usuario_id : false;

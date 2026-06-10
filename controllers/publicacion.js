@@ -45,12 +45,12 @@ export const getPublicaciones = async (req, res) => {
       const plain = pub.get({ plain: true });
 
       plain.imagenes = (plain.imagenes || []).map((img) => {
-        const reacciones = img.Reaccions || [];
-        const cantVotos = reacciones.length;
+        const votos = img.votos || [];
+        const cantVotos = votos.length;
         const promedio =
           cantVotos > 0
             ? (
-                reacciones.reduce((s, r) => s + r.estrellas, 0) / cantVotos
+                votos.reduce((s, r) => s + r.estrellas, 0) / cantVotos
               ).toFixed(1)
             : null;
 
@@ -63,8 +63,7 @@ export const getPublicaciones = async (req, res) => {
           cantVotos,
           promedio,
           miVoto: usuarioId
-            ? reacciones.find((r) => r.usuario_id === usuarioId)?.estrellas ||
-              null
+            ? votos.find((r) => r.usuario_id === usuarioId)?.estrellas || null
             : null,
           yaDenuncio: usuarioId
             ? (img.Denuncias || []).some((d) => d.usuario_id === usuarioId)
@@ -439,7 +438,7 @@ export const postEditarPublicacion = async (req, res) => {
       include: [{ model: Etiqueta }],
     });
     const etiquetasActualizadas = pubConEtiquetas.Etiqueta || [];
-    
+
     res.json({
       ok: true,
       titulo: titulo.trim(),
