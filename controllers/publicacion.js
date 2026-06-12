@@ -49,9 +49,9 @@ export const getPublicaciones = async (req, res) => {
         const cantVotos = votos.length;
         const promedio =
           cantVotos > 0
-            ? (
-                votos.reduce((s, r) => s + r.estrellas, 0) / cantVotos
-              ).toFixed(1)
+            ? (votos.reduce((s, r) => s + r.estrellas, 0) / cantVotos).toFixed(
+                1,
+              )
             : null;
 
         return {
