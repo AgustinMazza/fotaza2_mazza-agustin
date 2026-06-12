@@ -153,6 +153,13 @@ export const postSeguir = async (req, res) => {
     }
 
     await Seguidor.create({ seguidor_id: seguidorId, seguido_id: seguidoId });
+
+    await crearNotificacion({
+      usuarioId: seguidoId,
+      origenId: seguidorId,
+      tipo: "seguidor",
+    });
+
     return res.json({ ok: true });
   } catch (error) {
     console.error("Error al seguir:", error);
@@ -167,12 +174,6 @@ export const postDejarDeSeguir = async (req, res) => {
 
     await Seguidor.destroy({
       where: { seguidor_id: seguidorId, seguido_id: seguidoId },
-    });
-
-    await crearNotificacion({
-      usuarioId: seguidoId,
-      origenId: seguidorId,
-      tipo: "seguidor",
     });
 
     return res.json({ ok: true });

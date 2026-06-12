@@ -10,6 +10,7 @@ const Denuncia = sequelize.define("Denuncia", {
     type: DataTypes.ENUM("pendiente", "aprobada", "desestimada"),
     defaultValue: "pendiente",
   },
+  descripcion: { type: DataTypes.TEXT, allowNull: true },
 });
 
 export default Denuncia;
